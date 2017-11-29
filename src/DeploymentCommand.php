@@ -163,10 +163,14 @@ class DeploymentCommand extends Command
         if (isset($this->config->server->nodes)) {
             $this->output->writeln(' - <info>Transfer files</info>');
             $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
+            $keyFile = $this->config->server->keyfile;
             foreach ($this->config->server->nodes as $node) {
                 $cmd = 'rsync -avz --delete ';
                 if (file_exists($ignoreFile)) {
                     $cmd .= "--exclude-from={$ignoreFile} ";
+                }
+                if ($keyFile) {
+                    $cmd .= '-e "ssh -i '.$keyFile.'"';
                 }
                 $cmd .= " . $node:{$this->config->server->target}";
                 if ($this->output->isVerbose()) {
