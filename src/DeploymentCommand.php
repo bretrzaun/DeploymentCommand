@@ -56,17 +56,24 @@ class DeploymentCommand extends Command
 
         $this->io->section("Deploy application ({$this->env})");
 
-        $this->loadConfig()
+        $this->loadConfig();
+
+        try {
+            $this
             ->runScriptsLocal('pre-deploy-cmd')
             ->runScriptsRemote('pre-deploy-cmd')
             ->syncFiles()
             ->runScriptsRemote('post-deploy-cmd')
-            ->runScriptsLocal('post-deploy-cmd');
-
+                ;
         $this->output->writeln('');
         $this->io->success(
             'Deployment successful !'
         );
+        } catch (\Throwable $e) {
+            $this->io->error($e->getMessage());
+        } finally {
+            $this->runScriptsLocal('post-deploy-cmd');
+        }
     }
 
     protected function loadConfig()
