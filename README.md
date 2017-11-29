@@ -1,5 +1,7 @@
 # Deployment Command
 
+[![Build Status](https://travis-ci.org/bretrzaun/DeploymentCommand.svg?branch=master)](https://travis-ci.org/bretrzaun/DeploymentCommand)
+
 Symfony Console command to deploy an application to remote server(s).
 
 ## Installation
