@@ -1,5 +1,5 @@
 {
-    "name": "bretrzaun/deploy-command",
+    "name": "bretrzaun/deployment-command",
     "description": "Console-Command to deploy an application to (multiple) servers",
     "type": "library",
     "license": "MIT",
