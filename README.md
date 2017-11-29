@@ -1,6 +1,6 @@
 # Deployment Command
 
-Console-Command to deploy an application to remote server(s).
+Symfony Console command to deploy an application to remote server(s).
 
 ## Installation
 
@@ -44,5 +44,5 @@ For each environment create configuration file named like the environment.
 Register the console command to a Symfony console application:
 
 ```
-$application->add(new DeploymentCommand('path/to/config-folder/'));
+$console->add(new DeploymentCommand('path/to/config-folder/'));
 ```
