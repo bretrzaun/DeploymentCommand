@@ -83,7 +83,7 @@ class DeployCommandTest extends TestCase
                 ->method('factory')
                 ->withConsecutive(
                   ['command1'],
-                  ['rsync -avz --delete  . user@my-server:/target-folder'],
+                  ['rsync -avz --delete -e "ssh -i my-key-file" . user@my-server:/target-folder'],
                   ['command2']
                 )
                 ->willReturn($mockProcess);
