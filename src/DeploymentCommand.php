@@ -17,10 +17,19 @@ class DeploymentCommand extends Command
 
     protected $configpath;
     protected $env;
+
+    /**
+     * @var SymfonyStyle
+     */
     protected $io;
+
+    /**
+     * @var OutputInterface
+     */
     protected $output;
     protected $config;
     protected $remoteProcessor;
+    protected $processFactory;
 
     public function __construct($configpath)
     {
@@ -56,7 +65,7 @@ class DeploymentCommand extends Command
 
         $this->output->writeln('');
         $this->io->success(
-            "Deployment successful !"
+            'Deployment successful !'
         );
     }
 
@@ -83,10 +92,10 @@ class DeploymentCommand extends Command
             $scripts = [$scripts];
         }
 
-        $this->output->writeln(" - <info>Run local script(s) (".$name.")</info>");
+        $this->output->writeln(' - <info>Run local script(s) (' .$name. ')</info>');
         foreach ($scripts as $cmd) {
             if ($this->output->isVerbose()) {
-                $this->output->writeln("   - <comment>".$cmd."</comment>");
+                $this->output->writeln('   - <comment>' .$cmd. '</comment>');
             }
             #$task = new Process($cmd);
             $task = $this->processFactory->factory($cmd);
@@ -97,7 +106,6 @@ class DeploymentCommand extends Command
             });
             if (!$task->isSuccessful()) {
                 throw new RuntimeException($task->getErrorOutput());
-                return $this;
             }
         }
         return $this;
@@ -115,11 +123,11 @@ class DeploymentCommand extends Command
         if (empty($scripts)) {
             return $this;
         }
-        $this->output->writeln(" - <info>Run remote scripts (" . $name . ")</info>");
+        $this->output->writeln(" - <info>Run remote scripts ($name)</info>");
         foreach ($scripts as $cmd) {
             $cmd = "cd {$this->config->server->target}; ".$cmd;
             if ($this->output->isVerbose()) {
-                $this->output->writeln("   - <comment>" . $cmd . "</comment>");
+                $this->output->writeln("   - <comment>$cmd</comment>");
             }
 
             // Task aufbauen
@@ -153,10 +161,10 @@ class DeploymentCommand extends Command
     protected function syncFiles()
     {
         if (isset($this->config->server->nodes)) {
-            $this->output->writeln(" - <info>Transfer files</info>");
+            $this->output->writeln(' - <info>Transfer files</info>');
             $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
             foreach ($this->config->server->nodes as $node) {
-                $cmd = "rsync -avz --delete ";
+                $cmd = 'rsync -avz --delete ';
                 if (file_exists($ignoreFile)) {
                     $cmd .= "--exclude-from={$ignoreFile} ";
                 }
