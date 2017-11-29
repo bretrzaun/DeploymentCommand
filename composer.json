@@ -26,5 +26,10 @@
         "psr-4" : {
             "BretRZaun\\DeploymentCommand\\Tests\\" : "tests/"
         }
+    },
+    "config" : {
+        "platform" : {
+            "php" : "7.0"
+        }
     }
 }
