@@ -133,7 +133,7 @@ class DeploymentCommand extends Command
             // Task aufbauen
             $task = new Task(
                 $this->config->server->nodes,
-                $this->config->server->username,
+                null,
                 $cmd,
                 true
             );
