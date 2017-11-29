@@ -14,7 +14,7 @@ Install via Composer:
 
 For each environment create configuration file named like the environment.
 
-**NOTE:** The nodes must be accessible via SSH-based authenication.
+**NOTE:** The nodes must be accessible via SSH-based authentication.
 
 ### Example
 
