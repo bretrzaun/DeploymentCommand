@@ -1,0 +1,23 @@
+{
+    "server" : {
+        "nodes" : ["user@my-server"],
+        "username" : "user",
+        "keyfile" : "my-key-file",
+        "target" : "/target-folder",
+        "scripts" : {
+            "post-deploy-cmd" : [
+                "command1",
+                "command2"
+            ]
+        }
+    },
+    "scripts" : {
+        "pre-deploy-cmd" : [
+            "foo",
+            "composer install --no-dev -o"
+        ],
+        "post-deploy-cmd" : [
+            "composer install"
+        ]
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "name": "bretrzaun/deploy-command",
+    "description": "Console-Command to deploy an application to (multiple) servers",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bret R. Zaun",
+            "email": "bretrzaun@hotmail.com"
+        }
+    ],
+    "require": {
+        "symfony/console": "^3.3",
+        "laravel/envoy" : "^1.2"
+    },
+    "require-dev" : {
+        "phpunit/phpunit" : "^6.0",
+        "symfony/var-dumper" : "^3.3"
+    },
+    "autoload" : {
+        "psr-4" : {
+            "BretRZaun\\DeploymentCommand\\" : "src/"
+        }
+    },
+    "autoload-dev" : {
+        "psr-4" : {
+            "BretRZaun\\DeploymentCommand\\Tests\\" : "tests/"
+        }
+    }
+}
