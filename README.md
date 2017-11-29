@@ -14,13 +14,14 @@ Install via Composer:
 
 For each environment create configuration file named like the environment.
 
+**NOTE:** The nodes must be accessible via SSH-based authenication.
+
 ### Example
 
 ```
 {
     "server" : {
         "nodes" : ["user@my-server"],
-        "keyfile" : "the-key-file-to-use",
         "target" : "/target-folder",
         "scripts" : {
             "pre-deploy-cmd" : [],

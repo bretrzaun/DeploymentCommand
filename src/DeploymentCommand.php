@@ -33,7 +33,7 @@ class DeploymentCommand extends Command
 
     public function __construct($configpath)
     {
-        parent::__construct(null);
+        parent::__construct();
         $this->configpath = $configpath;
         $this->remoteProcessor = new ParallelSSH();
         $this->processFactory = new ProcessFactory();
@@ -60,15 +60,15 @@ class DeploymentCommand extends Command
 
         try {
             $this
-            ->runScriptsLocal('pre-deploy-cmd')
-            ->runScriptsRemote('pre-deploy-cmd')
-            ->syncFiles()
-            ->runScriptsRemote('post-deploy-cmd')
+                ->runScriptsLocal('pre-deploy-cmd')
+                ->runScriptsRemote('pre-deploy-cmd')
+                ->syncFiles()
+                ->runScriptsRemote('post-deploy-cmd')
                 ;
-        $this->output->writeln('');
-        $this->io->success(
-            'Deployment successful !'
-        );
+            $this->output->writeln('');
+            $this->io->success(
+                'Deployment successful !'
+            );
         } catch (\Throwable $e) {
             $this->io->error($e->getMessage());
         } finally {
@@ -107,7 +107,7 @@ class DeploymentCommand extends Command
             #$task = new Process($cmd);
             $task = $this->processFactory->factory($cmd);
             $task->run(function ($type, $data) {
-                if ($type == Process::OUT && $this->output->isVeryVerbose()) {
+                if ($type === Process::OUT && $this->output->isVeryVerbose()) {
                     $this->output->writeln($data);
                 }
             });
@@ -170,18 +170,14 @@ class DeploymentCommand extends Command
         if (isset($this->config->server->nodes)) {
             $this->output->writeln(' - <info>Transfer files</info>');
             $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
-            $keyFile = $this->config->server->keyfile;
             foreach ($this->config->server->nodes as $node) {
                 $cmd = 'rsync -avz --delete ';
                 if (file_exists($ignoreFile)) {
                     $cmd .= "--exclude-from={$ignoreFile} ";
                 }
-                if ($keyFile) {
-                    $cmd .= '-e "ssh -i '.$keyFile.'"';
-                }
-                $cmd .= " . $node:{$this->config->server->target}";
+                $cmd .= ". $node:{$this->config->server->target}";
                 if ($this->output->isVerbose()) {
-                    $this->output->writeln("   - <comment>".$cmd."</comment>");
+                    $this->output->writeln("   - <comment>$cmd</comment>");
                 }
                 #$task = new Process($cmd);
                 $task = $this->processFactory->factory($cmd);

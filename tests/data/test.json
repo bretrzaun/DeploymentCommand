@@ -1,7 +1,6 @@
 {
     "server" : {
         "nodes" : ["user@my-server"],
-        "keyfile" : "my-key-file",
         "target" : "/target-folder",
         "scripts" : {
             "pre-deploy-cmd" : [
