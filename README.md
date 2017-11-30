@@ -12,7 +12,7 @@ Install via Composer:
 
 ## Configuration
 
-For each environment create configuration file named like the environment.
+For each environment create a configuration file named like the environment.
 
 **NOTE:** The nodes must be accessible via SSH-based authentication.
 
