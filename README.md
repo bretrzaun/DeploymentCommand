@@ -8,7 +8,7 @@ Symfony Console command to deploy an application to remote server(s).
 
 Install via Composer:
 
-```composer require bretrzaun/deploy-command```
+```composer require bretrzaun/deployment-command```
 
 ## Configuration
 
