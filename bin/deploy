@@ -4,7 +4,7 @@ if (PHP_SAPI !== 'cli') {
     echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
 }
 
-require __DIR__.'/../vendor/autoload.php';
+require __DIR__.'/../src/bootstrap.php';
 use Symfony\Component\Console\Application;
 
 // run the command application
