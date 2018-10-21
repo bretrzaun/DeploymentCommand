@@ -31,5 +31,8 @@
         "platform" : {
             "php" : "7.0"
         }
-    }
+    },
+    "bin": [
+        "bin/deploy"
+    ]
 }
