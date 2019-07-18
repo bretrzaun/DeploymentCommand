@@ -54,7 +54,7 @@ class DeploymentCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
         $this->env = $input->getArgument('env');
 
-        $this->io->section("Deploy application ({$this->env})");
+        $this->io->title("Deploy application ({$this->env})");
 
         $this->loadConfig();
 
@@ -104,7 +104,6 @@ class DeploymentCommand extends Command
             if ($this->output->isVerbose()) {
                 $this->output->writeln('   - <comment>' .$cmd. '</comment>');
             }
-            #$task = new Process($cmd);
             $task = $this->processFactory->factory($cmd);
             $task->run(function ($type, $data) {
                 if ($type === Process::OUT && $this->output->isVeryVerbose()) {
@@ -171,15 +170,15 @@ class DeploymentCommand extends Command
             $this->output->writeln(' - <info>Transfer files</info>');
             $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
             foreach ($this->config->server->nodes as $node) {
-                $cmd = 'rsync -avz --delete ';
+                $cmd = ['rsync', '-avz', '--delete '];
                 if (file_exists($ignoreFile)) {
-                    $cmd .= "--exclude-from={$ignoreFile} ";
+                    $cmd[] = "--exclude-from={$ignoreFile} ";
                 }
-                $cmd .= ". $node:{$this->config->server->target}";
+                $cmd[] = '.';
+                $cmd[] = "$node:{$this->config->server->target}";
                 if ($this->output->isVerbose()) {
                     $this->output->writeln("   - <comment>$cmd</comment>");
                 }
-                #$task = new Process($cmd);
                 $task = $this->processFactory->factory($cmd);
                 $task->setTimeout(600);
                 $task->run(function ($type, $data) {
@@ -197,12 +196,12 @@ class DeploymentCommand extends Command
         return $this;
     }
 
-    public function setRemoteProcessor(RemoteProcessor $processor)
+    public function setRemoteProcessor(RemoteProcessor $processor): void
     {
         $this->remoteProcessor = $processor;
     }
 
-    public function setProcessFactory(ProcessFactory $factory)
+    public function setProcessFactory(ProcessFactory $factory): void
     {
         $this->processFactory = $factory;
     }

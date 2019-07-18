@@ -5,13 +5,14 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use BretRZaun\DeploymentCommand\DeploymentCommand;
 use BretRZaun\DeploymentCommand\ProcessFactory;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Laravel\Envoy\ParallelSSH;
 use Symfony\Component\Process\Process;
 
 class DeployCommandTest extends TestCase
 {
-    private function createApplication()
+    private function createApplication(): Application
     {
         $application = new Application();
         $application->setCatchExceptions(false);
@@ -19,37 +20,36 @@ class DeployCommandTest extends TestCase
         return $application;
     }
 
-    public function testRunWithoutEnvironment()
+    public function testRunWithoutEnvironment(): void
     {
         $application = $this->createApplication();
 
         $command = $application->find('deploy');
         $commandTester = new CommandTester($command);
 
-        $this->expectException(\Symfony\Component\Console\Exception\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Not enough arguments (missing: "env").');
         $commandTester->execute(array(
             'command'  => $command->getName()
         ));
     }
 
-    public function testRunWithMissingConfiguration()
+    public function testRunWithMissingConfiguration(): void
     {
         $application = $this->createApplication();
 
         $command = $application->find('deploy');
         $commandTester = new CommandTester($command);
 
-        $this->expectException(\Symfony\Component\Console\Exception\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $commandTester->execute(array(
             'command'  => $command->getName(),
             'env' => 'does-not-exist'
         ));
         $output = $commandTester->getDisplay();
-        dump($output);
     }
 
-    public function testRunEmptyConfiguration()
+    public function testRunEmptyConfiguration(): void
     {
         $application = $this->createApplication();
         $command = $application->find('deploy');
@@ -65,7 +65,7 @@ class DeployCommandTest extends TestCase
         $this->assertContains('[OK] Deployment successful !', $output);
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $application = $this->createApplication();
         $command = $application->find('deploy');
@@ -73,35 +73,33 @@ class DeployCommandTest extends TestCase
         $mockFactory = $this->createMock(ProcessFactory::class);
         $mockProcess = $this->createMock(Process::class);
 
-        $mockProcess->expects($this->any())
+        $mockProcess
             ->method('run');
-        $mockProcess->expects($this->any())
+        $mockProcess
             ->method('isSuccessful')
             ->willReturn(true);
 
         $mockFactory->expects($this->exactly(3))
                 ->method('factory')
                 ->withConsecutive(
-                  ['command1'],
-                  ['rsync -avz --delete . user@my-server:/target-folder'],
-                  ['command2']
+                    $this->equalTo('command1'),
+                    $this->equalTo([['rsync'], ['-avz'], ['--delete'], ['.'], ['user@my-server:/target-folder']]),
+                    $this->equalTo('command2')
                 )
                 ->willReturn($mockProcess);
 
-        $mockSSH->expects($this->any())
+        $mockSSH
             ->method('run');
 
         $command->setProcessFactory($mockFactory);
         $command->setRemoteProcessor($mockSSH);
         $commandTester = new CommandTester($command);
         $commandTester->execute(
-            array(
+            [
                 'command'  => $command->getName(),
-                'env' => 'test'
-            ),
-            array(
-                'vvv' => true
-            )
+                'env' => 'test',
+                '-vvv' => true
+            ]
           );
         $output = $commandTester->getDisplay();
 

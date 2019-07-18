@@ -7,6 +7,9 @@ class ProcessFactory
 {
     public function factory($cmd) : Process
     {
-      return new Process($cmd);
+        if (is_string($cmd)) {
+            $cmd = explode(' ', $cmd);
+        }
+        return new Process($cmd);
     }
 }
