@@ -105,6 +105,7 @@ class DeploymentCommand extends Command
                 $this->output->writeln('   - <comment>' .$cmd. '</comment>');
             }
             $task = $this->processFactory->factory($cmd);
+            $task->setTimeout(300);
             $task->run(function ($type, $data) {
                 if ($type === Process::OUT && $this->output->isVeryVerbose()) {
                     $this->output->writeln($data);
