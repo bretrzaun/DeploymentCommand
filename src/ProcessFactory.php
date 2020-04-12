@@ -8,7 +8,7 @@ class ProcessFactory
     public function factory($cmd) : Process
     {
         if (is_string($cmd)) {
-            $cmd = explode(' ', $cmd);
+            return Process::fromShellCommandline($cmd);
         }
         return new Process($cmd);
     }

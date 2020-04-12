@@ -82,9 +82,11 @@ class DeployCommandTest extends TestCase
         $mockFactory->expects($this->exactly(3))
                 ->method('factory')
                 ->withConsecutive(
-                    $this->equalTo('command1'),
-                    $this->equalTo([['rsync'], ['-avz'], ['--delete'], ['.'], ['user@my-server:/target-folder']]),
-                    $this->equalTo('command2')
+                    [$this->equalTo('command1')],
+                    [
+                        $this->equalTo(['rsync', '-avz', '--delete ', '.', 'user@my-server:/target-folder'])
+                    ],
+                    [$this->equalTo('command2')]
                 )
                 ->willReturn($mockProcess);
 
