@@ -1,6 +1,8 @@
 # Deployment Command
 
+[![Latest Stable Version](https://poser.pugx.org/bretrzaun/deployment-command/v)](//packagist.org/packages/bretrzaun/deployment-command)
 [![Build Status](https://travis-ci.org/bretrzaun/DeploymentCommand.svg?branch=master)](https://travis-ci.org/bretrzaun/DeploymentCommand)
+[![License](https://poser.pugx.org/bretrzaun/deployment-command/license)](//packagist.org/packages/bretrzaun/deployment-command)
 
 Symfony Console command to deploy an application to remote server(s).
 
