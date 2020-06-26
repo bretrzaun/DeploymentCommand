@@ -1,21 +1,20 @@
 {
-    "server" : {
-        "nodes" : ["user@my-server"],
-        "target" : "/target-folder",
-        "scripts" : {
-            "pre-deploy-cmd" : [
+    "server": {
+        "nodes": [
+            "user@my-server"
+        ],
+        "target": "/target-folder",
+        "keyfile": "/path-to/keyfile",
+        "scripts": {
+            "pre-deploy-cmd": [
                 "remote-command1"
             ],
-            "post-deploy-cmd" : [
-                "remote-command2"
-            ]
+            "post-deploy-cmd": "remote-command2"
         }
     },
-    "scripts" : {
-        "pre-deploy-cmd" : [
-            "command1"
-        ],
-        "post-deploy-cmd" : [
+    "scripts": {
+        "pre-deploy-cmd": "command1",
+        "post-deploy-cmd": [
             "command2"
         ]
     }

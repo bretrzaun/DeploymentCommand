@@ -71,7 +71,7 @@ class DeploymentCommand extends Command
                 'Deployment successful !'
             );
         } catch (\Throwable $e) {
-            $this->io->error($e->getMessage());
+            $this->io->error($e->getMessage().' in '.$e->getFile().':'.$e->getLine());
             $result = 1;
         } finally {
             $this->runScriptsLocal('post-deploy-cmd');
@@ -87,10 +87,23 @@ class DeploymentCommand extends Command
         }
         $config = json_decode(file_get_contents($filename), true);
 
+        $scriptsCallable = function(OptionsResolver $scriptResolver) {
+            $scriptResolver->setDefined(['pre-deploy-cmd', 'post-deploy-cmd']);
+            $scriptResolver->setAllowedTypes('pre-deploy-cmd', ['string', 'string[]']);
+            $scriptResolver->setAllowedTypes('post-deploy-cmd', ['string', 'string[]']);
+        };
+
         // config setting
         $resolver = new OptionsResolver();
-        $resolver->setDefined('server');
-        $resolver->setDefined('scripts');
+        $resolver->setDefault('server', function(OptionsResolver $serverResolver) use ($scriptsCallable) {
+            $serverResolver->setRequired(['nodes', 'target']);
+            $serverResolver->setDefault('scripts', $scriptsCallable);
+            $serverResolver->setDefined(['keyfile']);
+            $serverResolver->setAllowedTypes('nodes', 'string[]');
+            $serverResolver->setAllowedTypes('target', 'string');
+            $serverResolver->setAllowedTypes('keyfile', 'string');
+        });
+        $resolver->setDefault('scripts', $scriptsCallable);
         $resolver->setDefault('options', function(OptionsResolver $optionsResolver) {
             $optionsResolver->setDefaults([
                 'script-timeout' => 120,
@@ -185,32 +198,31 @@ class DeploymentCommand extends Command
 
     protected function syncFiles()
     {
-        if (isset($this->config['server']['nodes'])) {
-            $this->output->writeln(' - <info>Transfer files</info>');
-            $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
-            foreach ($this->config['server']['nodes'] as $node) {
-                $cmd = ['rsync', '-avz', '--delete '];
-                if (file_exists($ignoreFile)) {
-                    $cmd[] = "--exclude-from={$ignoreFile} ";
-                }
-                $cmd[] = '.';
-                $cmd[] = $node.':'.$this->config['server']['target'];
-                if ($this->output->isVerbose()) {
-                    $this->output->writeln("   - <comment>$cmd</comment>");
-                }
-                $task = $this->processFactory->factory($cmd);
-                $task->setTimeout($this->config['options']['sync-timeout']);
-                $task->run(function ($type, $data) {
-                    if ($type == Process::OUT && $this->output->isVerbose()) {
-                        $this->output->writeln(trim($data));
-                    }
-                });
-                if (!$task->isSuccessful()) {
-                    throw new RuntimeException($task->getErrorOutput());
-                }
+        $this->output->writeln(' - <info>Transfer files</info>');
+        $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
+        foreach ($this->config['server']['nodes'] as $node) {
+            $cmd = ['rsync', '-avz', '--delete'];
+            if (file_exists($ignoreFile)) {
+                $cmd[] = "--exclude-from={$ignoreFile} ";
             }
-        } else {
-            $this->io->warning('No servers configured');
+            if (isset($this->config['server']['keyfile'])) {
+                $cmd[] = '-e "ssh -i '.$this->config['server']['keyfile'].'"';
+            }
+            $cmd[] = '.';
+            $cmd[] = $node.':'.$this->config['server']['target'];
+            if ($this->io->isVerbose()) {
+                $this->output->writeln("   - <comment>".implode(' ', $cmd)."</comment>");
+            }
+            $task = $this->processFactory->factory($cmd);
+            $task->setTimeout($this->config['options']['sync-timeout']);
+            $task->run(function ($type, $data) {
+                if ($type == Process::OUT && $this->output->isVerbose()) {
+                    $this->output->writeln(trim($data));
+                }
+            });
+            if (!$task->isSuccessful()) {
+                throw new RuntimeException($task->getErrorOutput());
+            }
         }
         return $this;
     }

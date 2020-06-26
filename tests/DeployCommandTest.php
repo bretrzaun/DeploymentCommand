@@ -9,6 +9,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Laravel\Envoy\ParallelSSH;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class DeployCommandTest extends TestCase
 {
@@ -61,8 +62,7 @@ class DeployCommandTest extends TestCase
         $output = $commandTester->getDisplay();
 
         $this->assertStringContainsString('Deploy application (test_empty)', $output);
-        $this->assertStringContainsString('[WARNING] No servers configured', $output);
-        $this->assertStringContainsString('[OK] Deployment successful !', $output);
+        $this->assertStringContainsString('[ERROR] The required options "server[nodes]", "server[target]" are missing.', $output);
     }
 
     public function testRun(): void
@@ -84,7 +84,7 @@ class DeployCommandTest extends TestCase
                 ->withConsecutive(
                     [$this->equalTo('command1')],
                     [
-                        $this->equalTo(['rsync', '-avz', '--delete ', '.', 'user@my-server:/target-folder'])
+                        $this->equalTo(['rsync', '-avz', '--delete', '-e "ssh -i /path-to/keyfile"', '.', 'user@my-server:/target-folder'])
                     ],
                     [$this->equalTo('command2')]
                 )
@@ -99,8 +99,10 @@ class DeployCommandTest extends TestCase
         $commandTester->execute(
             [
                 'command'  => $command->getName(),
-                'env' => 'test',
-                '-vvv' => true
+                'env' => 'test'
+            ],
+            [
+                'verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE
             ]
           );
         $output = $commandTester->getDisplay();
@@ -110,6 +112,7 @@ class DeployCommandTest extends TestCase
         $this->assertStringContainsString('- Run local script(s) (pre-deploy-cmd)', $output);
         $this->assertStringContainsString('- Run remote scripts (pre-deploy-cmd)', $output);
         $this->assertStringContainsString('- Transfer files', $output);
+        $this->assertStringContainsString('  - rsync -avz --delete -e "ssh -i /path-to/keyfile" . user@my-server:/target-folder', $output);
         $this->assertStringContainsString('- Run remote scripts (post-deploy-cmd)', $output);
         $this->assertStringContainsString('- Run local script(s) (post-deploy-cmd)', $output);
         $this->assertStringContainsString('[OK] Deployment successful !', $output);

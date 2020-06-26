@@ -14,7 +14,7 @@ Install via Composer:
 
 For each environment create a configuration file named like the environment.
 
-**NOTE:** The nodes must be accessible via SSH-based authentication.
+The nodes must be accessible via SSH-based authentication or a keyfile can be given.
 
 ### Example
 
@@ -22,6 +22,7 @@ For each environment create a configuration file named like the environment.
 {
     "server" : {
         "nodes" : ["user@my-server"],
+        "keyfile": "/path-to/keyfile",
         "target" : "/target-folder",
         "scripts" : {
             "pre-deploy-cmd" : [],
@@ -44,7 +45,7 @@ For each environment create a configuration file named like the environment.
 
 ### Options
 
-In the `config` section the following options can be defined
+In the `config` section the following options can be defined:
 
 #### script-timeout
 
