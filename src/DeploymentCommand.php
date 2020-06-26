@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DeploymentCommand extends Command
 {
@@ -85,16 +86,31 @@ class DeploymentCommand extends Command
         if (!file_exists($filename)) {
             throw new RuntimeException("Config file $filename not found");
         }
-        $this->config = json_decode(file_get_contents($filename));
+        $config = json_decode(file_get_contents($filename), true);
+
+        // config setting
+        $resolver = new OptionsResolver();
+        $resolver->setDefined('server');
+        $resolver->setDefined('scripts');
+        $resolver->setDefault('options', function(OptionsResolver $optionsResolver) {
+            $optionsResolver->setDefaults([
+                'script-timeout' => 120,
+                'sync-timeout' => 300
+            ]);
+            $optionsResolver->setAllowedTypes('script-timeout', 'int');
+            $optionsResolver->setAllowedTypes('sync-timeout', 'int');
+        });
+        $this->config = $resolver->resolve($config);
+
         return $this;
     }
 
     protected function runScriptsLocal($name)
     {
-        if (!isset($this->config->scripts->$name)) {
+        if (!isset($this->config['scripts'][$name])) {
             return $this;
         }
-        $scripts = $this->config->scripts->$name;
+        $scripts = $this->config['scripts'][$name];
         if (empty($scripts)) {
             return $this;
         }
@@ -108,7 +124,7 @@ class DeploymentCommand extends Command
                 $this->output->writeln('   - <comment>' .$cmd. '</comment>');
             }
             $task = $this->processFactory->factory($cmd);
-            $task->setTimeout(300);
+            $task->setTimeout($this->config['options']['script-timeout']);
             $task->run(function ($type, $data) {
                 if ($type === Process::OUT && $this->output->isVeryVerbose()) {
                     $this->output->writeln($data);
@@ -123,10 +139,10 @@ class DeploymentCommand extends Command
 
     protected function runScriptsRemote($name)
     {
-        if (!isset($this->config->server->scripts->$name)) {
+        if (!isset($this->config['server']['scripts'][$name])) {
             return $this;
         }
-        $scripts = $this->config->server->scripts->$name;
+        $scripts = $this->config['server']['scripts'][$name];
         if (!is_array($scripts)) {
             $scripts = [$scripts];
         }
@@ -135,14 +151,14 @@ class DeploymentCommand extends Command
         }
         $this->output->writeln(" - <info>Run remote scripts ($name)</info>");
         foreach ($scripts as $cmd) {
-            $cmd = "cd {$this->config->server->target}; ".$cmd;
+            $cmd = 'cd '.$this->config['server']['target'].'; '.$cmd;
             if ($this->output->isVerbose()) {
                 $this->output->writeln("   - <comment>$cmd</comment>");
             }
 
             // Task aufbauen
             $task = new Task(
-                $this->config->server->nodes,
+                $this->config['server']['nodes'],
                 null,
                 $cmd,
                 true
@@ -170,21 +186,21 @@ class DeploymentCommand extends Command
 
     protected function syncFiles()
     {
-        if (isset($this->config->server->nodes)) {
+        if (isset($this->config['server']['nodes'])) {
             $this->output->writeln(' - <info>Transfer files</info>');
             $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
-            foreach ($this->config->server->nodes as $node) {
+            foreach ($this->config['server']['nodes'] as $node) {
                 $cmd = ['rsync', '-avz', '--delete '];
                 if (file_exists($ignoreFile)) {
                     $cmd[] = "--exclude-from={$ignoreFile} ";
                 }
                 $cmd[] = '.';
-                $cmd[] = "$node:{$this->config->server->target}";
+                $cmd[] = $node.':'.$this->config['server']['target'];
                 if ($this->output->isVerbose()) {
                     $this->output->writeln("   - <comment>$cmd</comment>");
                 }
                 $task = $this->processFactory->factory($cmd);
-                $task->setTimeout(600);
+                $task->setTimeout($this->config['options']['sync-timeout']);
                 $task->run(function ($type, $data) {
                     if ($type == Process::OUT && $this->output->isVerbose()) {
                         $this->output->writeln(trim($data));

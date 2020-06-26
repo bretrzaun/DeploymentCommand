@@ -41,12 +41,12 @@ class DeployCommandTest extends TestCase
         $command = $application->find('deploy');
         $commandTester = new CommandTester($command);
 
-        $this->expectException(RuntimeException::class);
-        $commandTester->execute(array(
+        $commandTester->execute([
             'command'  => $command->getName(),
             'env' => 'does-not-exist'
-        ));
+        ]);
         $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('[ERROR] Config file', $output);
     }
 
     public function testRunEmptyConfiguration(): void

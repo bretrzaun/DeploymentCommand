@@ -42,6 +42,19 @@ For each environment create a configuration file named like the environment.
 }
 ```
 
+### Options
+
+In the `config` section the following options can be defined
+
+#### script-timeout
+
+Process timeout in seconds for each local script. Default value: 120 seconds
+
+#### sync-timeout
+
+Process timeout in seconds for sync. Default value: 300 seconds
+
+
 ## Usage
 
 Register the console command to a Symfony console application:
