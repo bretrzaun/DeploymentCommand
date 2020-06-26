@@ -57,10 +57,9 @@ class DeploymentCommand extends Command
 
         $this->io->title("Deploy application ({$this->env})");
 
-        $this->loadConfig();
-
         $result = 0;
         try {
+            $this->loadConfig();
             $this
                 ->runScriptsLocal('pre-deploy-cmd')
                 ->runScriptsRemote('pre-deploy-cmd')
