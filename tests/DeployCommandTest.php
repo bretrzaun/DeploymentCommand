@@ -60,9 +60,9 @@ class DeployCommandTest extends TestCase
         ));
         $output = $commandTester->getDisplay();
 
-        $this->assertContains('Deploy application (test_empty)', $output);
-        $this->assertContains('[WARNING] No servers configured', $output);
-        $this->assertContains('[OK] Deployment successful !', $output);
+        $this->assertStringContainsString('Deploy application (test_empty)', $output);
+        $this->assertStringContainsString('[WARNING] No servers configured', $output);
+        $this->assertStringContainsString('[OK] Deployment successful !', $output);
     }
 
     public function testRun(): void
@@ -106,12 +106,12 @@ class DeployCommandTest extends TestCase
         $output = $commandTester->getDisplay();
 
         #dump($output);
-        $this->assertContains('Deploy application (test)', $output);
-        $this->assertContains('- Run local script(s) (pre-deploy-cmd)', $output);
-        $this->assertContains('- Run remote scripts (pre-deploy-cmd)', $output);
-        $this->assertContains('- Transfer files', $output);
-        $this->assertContains('- Run remote scripts (post-deploy-cmd)', $output);
-        $this->assertContains('- Run local script(s) (post-deploy-cmd)', $output);
-        $this->assertContains('[OK] Deployment successful !', $output);
+        $this->assertStringContainsString('Deploy application (test)', $output);
+        $this->assertStringContainsString('- Run local script(s) (pre-deploy-cmd)', $output);
+        $this->assertStringContainsString('- Run remote scripts (pre-deploy-cmd)', $output);
+        $this->assertStringContainsString('- Transfer files', $output);
+        $this->assertStringContainsString('- Run remote scripts (post-deploy-cmd)', $output);
+        $this->assertStringContainsString('- Run local script(s) (post-deploy-cmd)', $output);
+        $this->assertStringContainsString('[OK] Deployment successful !', $output);
     }
 }
