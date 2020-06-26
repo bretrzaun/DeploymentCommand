@@ -58,6 +58,7 @@ class DeploymentCommand extends Command
 
         $this->loadConfig();
 
+        $result = 0;
         try {
             $this
                 ->runScriptsLocal('pre-deploy-cmd')
@@ -71,9 +72,11 @@ class DeploymentCommand extends Command
             );
         } catch (\Throwable $e) {
             $this->io->error($e->getMessage());
+            $result = 1;
         } finally {
             $this->runScriptsLocal('post-deploy-cmd');
         }
+        return $result;
     }
 
     protected function loadConfig()
