@@ -17,5 +17,9 @@
         "post-deploy-cmd": [
             "command2"
         ]
+    },
+    "options": {
+        "script-timeout": 120,
+        "sync-timeout": 300
     }
 }
