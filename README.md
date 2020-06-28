@@ -47,7 +47,7 @@ The nodes must be accessible via SSH-based authentication or a keyfile can be gi
 
 ### Options
 
-In the `config` section the following options can be defined:
+In the `options` section the following nodes can be defined:
 
 #### script-timeout
 
