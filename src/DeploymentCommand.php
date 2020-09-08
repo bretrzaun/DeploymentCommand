@@ -163,34 +163,30 @@ class DeploymentCommand extends Command
         }
         $this->output->writeln(" - <info>Run remote scripts ($name)</info>");
         foreach ($scripts as $cmd) {
-            $cmd = 'cd '.$this->config['server']['target'].'; '.$cmd;
-            if ($this->output->isVerbose()) {
-                $this->output->writeln("   - <comment>$cmd</comment>");
-            }
+            $script = 'cd '.$this->config['server']['target'].'; '.$cmd;
+            $this->output->writeln("   - $cmd");
 
-            // Task aufbauen
-            $task = new Task(
-                $this->config['server']['nodes'],
-                null,
-                $cmd,
-                true
-            );
-
-            // Task ausführen
-            $ssh = $this->remoteProcessor;
-            $exitcodes = $ssh->run($task, function ($type, $host, $output) {
-                if ($type == Process::ERR) {
-                    $this->io->error($host.': '.trim($output));
-                } else {
-                    if ($this->output->isVeryVerbose()) {
-                        $this->output->writeln(trim("$host [$type]: $output"));
-                    }
+            foreach($this->config['server']['nodes'] as $node) {
+                $cmd = 'ssh';
+                if (isset($this->config['server']['keyfile'])) {
+                    $cmd .= ' -i '.$this->config['server']['keyfile'];
                 }
-            });
+                $cmd .= ' '.$node;
+                $cmd .= ' "'.$script.'"';
 
-            if ($exitcodes != 0) {
-                $this->io->error("Error running $name-scripts");
-                break;
+                if ($this->io->isVeryVerbose()) {
+                    $this->output->writeln("   - $node: <comment>".$script."</comment>");
+                }
+                $task = $this->processFactory->factory($cmd);
+                $task->setTimeout($this->config['options']['script-timeout']);
+                $task->run(function ($type, $data) {
+                    if ($type == Process::OUT && $this->output->isVeryVerbose()) {
+                        $this->output->writeln(trim($data));
+                    }
+                });
+                if (!$task->isSuccessful()) {
+                    throw new RuntimeException($task->getErrorOutput());
+                }
             }
         }
         return $this;
@@ -201,17 +197,18 @@ class DeploymentCommand extends Command
         $this->output->writeln(' - <info>Transfer files</info>');
         $ignoreFile = $this->configpath.'/'.$this->env.'.ignore';
         foreach ($this->config['server']['nodes'] as $node) {
-            $cmd = ['rsync', '-avz', '--delete'];
-            if (file_exists($ignoreFile)) {
-                $cmd[] = "--exclude-from={$ignoreFile} ";
-            }
+            $cmd = 'rsync -avz';
             if (isset($this->config['server']['keyfile'])) {
-                $cmd[] = '-e "ssh -i '.$this->config['server']['keyfile'].'"';
+                $cmd .= " -e 'ssh -i ".$this->config['server']['keyfile']."'";
             }
-            $cmd[] = '.';
-            $cmd[] = $node.':'.$this->config['server']['target'];
+            if (file_exists($ignoreFile)) {
+                $cmd .= " --exclude-from={$ignoreFile}";
+            }
+            $cmd .= ' --delete';
+            $cmd .= ' . ';
+            $cmd .= $node.':'.$this->config['server']['target'];
             if ($this->io->isVerbose()) {
-                $this->output->writeln("   - <comment>".implode(' ', $cmd)."</comment>");
+                $this->output->writeln("   - <comment>".$cmd."</comment>");
             }
             $task = $this->processFactory->factory($cmd);
             $task->setTimeout($this->config['options']['sync-timeout']);
