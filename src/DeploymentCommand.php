@@ -36,7 +36,6 @@ class DeploymentCommand extends Command
     {
         parent::__construct();
         $this->configpath = $configpath;
-        $this->remoteProcessor = new ParallelSSH();
         $this->processFactory = new ProcessFactory();
     }
 
@@ -222,11 +221,6 @@ class DeploymentCommand extends Command
             }
         }
         return $this;
-    }
-
-    public function setRemoteProcessor(RemoteProcessor $processor): void
-    {
-        $this->remoteProcessor = $processor;
     }
 
     public function setProcessFactory(ProcessFactory $factory): void

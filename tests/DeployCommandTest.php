@@ -69,7 +69,7 @@ class DeployCommandTest extends TestCase
     {
         $application = $this->createApplication();
         $command = $application->find('deploy');
-        $mockSSH = $this->createMock(ParallelSSH::class);
+        #$mockSSH = $this->createMock(ParallelSSH::class);
         $mockFactory = $this->createMock(ProcessFactory::class);
         $mockProcess = $this->createMock(Process::class);
 
@@ -79,22 +79,20 @@ class DeployCommandTest extends TestCase
             ->method('isSuccessful')
             ->willReturn(true);
 
-        $mockFactory->expects($this->exactly(3))
+        $mockFactory->expects($this->exactly(5))
                 ->method('factory')
                 ->withConsecutive(
                     [$this->equalTo('command1')],
+                    [$this->equalTo('ssh -i /path-to/keyfile user@my-server "cd /target-folder; remote-command1"')],
                     [
-                        $this->equalTo(['rsync', '-avz', '--delete', '-e "ssh -i /path-to/keyfile"', '.', 'user@my-server:/target-folder'])
+                        $this->equalTo('rsync -avz -e \'ssh -i /path-to/keyfile\' --delete . user@my-server:/target-folder')
                     ],
+                    [$this->equalTo('ssh -i /path-to/keyfile user@my-server "cd /target-folder; remote-command2"')],
                     [$this->equalTo('command2')]
                 )
                 ->willReturn($mockProcess);
 
-        $mockSSH
-            ->method('run');
-
         $command->setProcessFactory($mockFactory);
-        $command->setRemoteProcessor($mockSSH);
         $commandTester = new CommandTester($command);
         $commandTester->execute(
             [
@@ -107,12 +105,11 @@ class DeployCommandTest extends TestCase
           );
         $output = $commandTester->getDisplay();
 
-        #dump($output);
         $this->assertStringContainsString('Deploy application (test)', $output);
         $this->assertStringContainsString('- Run local script(s) (pre-deploy-cmd)', $output);
         $this->assertStringContainsString('- Run remote scripts (pre-deploy-cmd)', $output);
         $this->assertStringContainsString('- Transfer files', $output);
-        $this->assertStringContainsString('  - rsync -avz --delete -e "ssh -i /path-to/keyfile" . user@my-server:/target-folder', $output);
+        $this->assertStringContainsString('  - rsync -avz -e \'ssh -i /path-to/keyfile\' --delete . user@my-server:/target-folder', $output);
         $this->assertStringContainsString('- Run remote scripts (post-deploy-cmd)', $output);
         $this->assertStringContainsString('- Run local script(s) (post-deploy-cmd)', $output);
         $this->assertStringContainsString('[OK] Deployment successful !', $output);
