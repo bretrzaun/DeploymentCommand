@@ -20,7 +20,7 @@ The nodes must be accessible via SSH-based authentication or a keyfile can be gi
 
 ### Example
 
-```
+```json
 {
     "server" : {
         "nodes" : ["user@my-server"],
@@ -62,6 +62,6 @@ Process timeout in seconds for sync. Default value: 300 seconds
 
 Register the console command to a Symfony console application:
 
-```
+```php
 $console->add(new DeploymentCommand('path/to/config-folder/'));
 ```
